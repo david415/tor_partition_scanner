@@ -1,0 +1,7 @@
+click==6.6
+stem>=1.4.0
+Twisted>=16.2.0
+txtorcon>=0.17.0
+cryptography>=1.6
+pyblake2>=0.9.3
+
