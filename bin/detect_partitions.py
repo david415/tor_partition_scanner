@@ -88,10 +88,14 @@ def main(tor_control, tor_data, log_dir, status_log, relay_list, consensus,
         config.DataDirectory = tor_data
 
         def get_random_tor_ports():
+            def set_socks_port(port):
+                config.SocksPort = port
+            def set_control_port(port):
+                config.ControlPort = port
             d2 = txtorcon.util.available_tcp_port(reactor)
-            d2.addCallback(lambda port: config.__setattr__('SocksPort', port))
+            d2.addCallback(set_socks_port)
             d2.addCallback(lambda _: txtorcon.util.available_tcp_port(reactor))
-            d2.addCallback(lambda port: config.__setattr__('ControlPort', port))
+            d2.addCallback(set_control_port)
             return d2
 
         def launch_and_get_protocol(ignore):
@@ -124,7 +128,6 @@ def main(tor_control, tor_data, log_dir, status_log, relay_list, consensus,
         print "launching tor..."
         d = start_tor()
     else:
-        print "using tor control port..."
         endpoint = clientFromString(reactor, tor_control.encode('utf-8'))
         d = txtorcon.build_tor_connection(endpoint, build_state=True)
 
@@ -142,7 +145,6 @@ def main(tor_control, tor_data, log_dir, status_log, relay_list, consensus,
         probe = ProbeAll2HopCircuits(tor_state, reactor, log_dir, reactor.stop,
                                      partitions, this_partition, build_duration, circuit_timeout,
                                      circuit_generator, log_chunk_size, max_concurrency)
-        print "starting scan"
         probe.start()
         def signal_handler(signal, frame):
             print "signal caught, stopping probe"
