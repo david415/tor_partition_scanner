@@ -29,13 +29,17 @@ Fisher Yates shuffle algorithm to shuffle our circuit permutations.
 special features
 ================
 
-- partition scheme allows the scanner to run on multiple
-  processes or machines so that different slices of circuit
-  permutations can be scanned in parallel
+- partition scheme Fisher Yates shuffling alogirthm allowing the
+  scanner to run on multiple processes or machines so that different
+  slices of circuit permutations can be scanned in parallel
 
-- resume feature allows continuing the scan from that last known
-  item in the scan partition
+- uses relays from consensus file or a text file containing relay fingerprints
 
+- can optionally test circuits specified in a text file... and can optionally
+  reverse circuit polarity
+
+- resume feature NOT YET FINISHED:
+  https://github.com/david415/tor_partition_scanner/issues/1
 
 contributors
 ============
