@@ -21,6 +21,7 @@ from stem.descriptor import parse_file
 
 from orscanner.partition_scan import ProbeAll2HopCircuits
 from orscanner.partition_shuffle import lazy2HopCircuitGenerator
+from orscanner.circuit import CircuitGeneratorFromFile
 
 log = Logger()
 
@@ -75,9 +76,10 @@ def get_router_list_from_file(tor_state, relay_list_file):
 @click.option('--circuit-timeout', default=10.0, type=float, help="circuit build timeout")
 @click.option('--log-chunk-size', default=1000, type=int, help="circuit events per log file")
 @click.option('--max-concurrency', default=100, type=int, help="max concurrency")
+@click.option('--circuit-file', default=None, type=str, help="precomputer file of circuits")
 def main(tor_control, tor_data, log_dir, status_log, relay_list, consensus,
          secret, partitions, this_partition, build_duration,
-         circuit_timeout, log_chunk_size, max_concurrency):
+         circuit_timeout, log_chunk_size, max_concurrency, circuit_file):
 
     assert status_log is not None
     status_log_fh = open(status_log, 'w')    
@@ -131,9 +133,7 @@ def main(tor_control, tor_data, log_dir, status_log, relay_list, consensus,
         endpoint = clientFromString(reactor, tor_control.encode('utf-8'))
         d = txtorcon.build_tor_connection(endpoint, build_state=True)
 
-    d.addCallback(gather_relays)
-
-    def start_probe(args):
+    def make_shuffle_generator(args):
         tor_state, routers = args
         consensus = ""
         for relay in [str(relay.id_hex) for relay in routers]:
@@ -142,6 +142,14 @@ def main(tor_control, tor_data, log_dir, status_log, relay_list, consensus,
         shared_secret_hash = hashlib.sha256(secret).digest()
         prng_seed = hashlib.pbkdf2_hmac('sha256', consensus_hash, shared_secret_hash, iterations=1)
         circuit_generator = lazy2HopCircuitGenerator(routers, this_partition, partitions, prng_seed)
+        return tor_state, circuit_generator
+
+    def make_generator_from_file(tor_state):
+        circuit_generator = CircuitGeneratorFromFile(circuit_file, tor_state)
+        return tor_state, circuit_generator
+
+    def start_probe(args):
+        tor_state, circuit_generator = args
         probe = ProbeAll2HopCircuits(tor_state, reactor, log_dir, reactor.stop,
                                      partitions, this_partition, build_duration, circuit_timeout,
                                      circuit_generator, log_chunk_size, max_concurrency)
@@ -151,6 +159,12 @@ def main(tor_control, tor_data, log_dir, status_log, relay_list, consensus,
             probe.stop()
         signal.signal(signal.SIGINT, signal_handler)
         signal.signal(signal.SIGTERM, signal_handler)
+
+    if circuit_file is None:
+        d.addCallback(gather_relays)
+        d.addCallback(make_shuffle_generator)
+    else:
+        d.addCallback(make_generator_from_file)
 
     d.addCallback(start_probe)
     reactor.run()
