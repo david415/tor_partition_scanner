@@ -77,9 +77,10 @@ def get_router_list_from_file(tor_state, relay_list_file):
 @click.option('--log-chunk-size', default=1000, type=int, help="circuit events per log file")
 @click.option('--max-concurrency', default=100, type=int, help="max concurrency")
 @click.option('--circuit-file', default=None, type=str, help="precomputer file of circuits")
+@click.option('--reverse-circuits', default=False, is_flag=True, help="reverse circuit polarity of circuits found in the file specified by --circuit-file option")
 def main(tor_control, tor_data, log_dir, status_log, relay_list, consensus,
          secret, partitions, this_partition, build_duration,
-         circuit_timeout, log_chunk_size, max_concurrency, circuit_file):
+         circuit_timeout, log_chunk_size, max_concurrency, circuit_file, reverse_circuits):
 
     assert status_log is not None
     status_log_fh = open(status_log, 'w')    
@@ -145,7 +146,9 @@ def main(tor_control, tor_data, log_dir, status_log, relay_list, consensus,
         return tor_state, circuit_generator
 
     def make_generator_from_file(tor_state):
-        circuit_generator = CircuitGeneratorFromFile(circuit_file, tor_state)
+        if reverse_circuits:
+            print "using circuits from file with reverse polarity"
+        circuit_generator = CircuitGeneratorFromFile(circuit_file, tor_state, reverse_circuits)
         return tor_state, circuit_generator
 
     def start_probe(args):
