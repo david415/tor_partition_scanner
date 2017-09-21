@@ -1,10 +1,10 @@
 import datetime
 import os.path
-import json
 
 from twisted.internet import threads, defer
 
 from orscanner.logger import log
+from orscanner.text_dump import dump
 
 
 class ResultSink(object):
@@ -15,7 +15,7 @@ class ResultSink(object):
 
     def __init__(self, out_dir, chunk_size=1000):
         """
-        out_dir: the directory to json log files to
+        out_dir: the directory to write log files to
         chunk_size: the max amount of data to write per file
         """
         self.out_dir = out_dir
@@ -35,7 +35,7 @@ class ResultSink(object):
         def write():
             wf = open(log_path, "w")
             try:
-                json.dump(chunk, wf, sort_keys=True)
+                dump(chunk, wf)
             finally:
                 wf.close()
 
@@ -44,7 +44,7 @@ class ResultSink(object):
             chunk = self.buffer[:self.chunk_size]
             self.buffer = self.buffer[self.chunk_size:]
             log_path = os.path.join(self.out_dir,
-                                    "%s-scan.json" % (datetime.datetime.utcnow().isoformat()))
+                                    "%s-scan.txt" % (datetime.datetime.utcnow().isoformat()))
 
             self.current_task.addCallback(lambda ign: threads.deferToThread(write))
 
@@ -58,10 +58,10 @@ class ResultSink(object):
         """
         def flush():
             log_path = os.path.join(self.out_dir,
-                                    "%s-scan.json" % (datetime.datetime.utcnow().isoformat()))
+                                    "%s-scan.txt" % (datetime.datetime.utcnow().isoformat()))
             wf = open(log_path, "w")
             try:
-                json.dump(self.buffer, wf, sort_keys=True)
+                dump(self.buffer, wf)
             finally:
                 wf.close()
             log.info("Finished writing measurement values to {log_path}.", log_path=log_path)

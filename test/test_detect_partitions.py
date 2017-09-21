@@ -75,7 +75,7 @@ class FakeTorState(object):
         return defer.succeed(None)
 
     def build_circuit(self, routers=None, using_guards=True):
-        print "build circuit"
+        #print "build circuit"
         cmd = "EXTENDCIRCUIT 0 "
         first = True
         for router in routers:
@@ -115,7 +115,7 @@ class ProbeTests(unittest.TestCase):
         secret = hashlib.sha256('REPLACEME shared secret').digest()
         partitions = 3
         this_partition = 0
-        build_duration = .2
+        build_duration = 2
         circuit_timeout = 10
 
         consensus = ""
