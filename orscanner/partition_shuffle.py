@@ -154,7 +154,7 @@ def lazy2HopCircuitGenerator(relays, this_partition, partitions, prng_seed):
     relays: the total list of relays for a given Tor consensus
     this_partition: the partition id corresponding to this generator
     partitions: total number of partitions
-    prng_seed: prnd seed which is a shared secret for all scanner hosts
+    prng_seed: prng seed which is a shared secret for all scanner hosts
     """
     shared_prng = yolo_prng(prng_seed)
     relays_len = len(relays)
