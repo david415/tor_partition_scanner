@@ -67,12 +67,10 @@ class ProbeAll2HopCircuits(object):
         serialized_route = self.serialize_route(route)
 
         def circuit_build_success(circuit):
-            self.count_success.inc()
             return circuit.close()
 
         def circuit_build_timeout(f):
             f.trap(CircuitBuildTimedOutError)
-            self.count_timeout.inc()
             time_end = self.now()
             self.result_sink.send({"time_start": time_start,
                                    "time_end": time_end,
@@ -81,7 +79,6 @@ class ProbeAll2HopCircuits(object):
             return None
 
         def circuit_build_failure(f):
-            self.count_failure.inc()
             time_end = self.now()
             self.result_sink.send({"time_start": time_start,
                                    "time_end": time_end,
@@ -101,7 +98,6 @@ class ProbeAll2HopCircuits(object):
         d.addBoth(clean_up)
 
     def start(self):
-
         def pop():
             try:
                 route = self.circuits.next()
