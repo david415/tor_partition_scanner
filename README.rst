@@ -21,7 +21,7 @@ build we record:
 - time duration to failure
 - time duration to success
 
-Care is take to not make rapid sequential Tor circuit
+Care is taken to not make rapid sequential Tor circuit
 builds through the same relays. Said another way: we use the
 Fisher Yates shuffle algorithm to shuffle our circuit permutations.
 
