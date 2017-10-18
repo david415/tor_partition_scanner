@@ -67,6 +67,11 @@ class ProbeAll2HopCircuits(object):
         serialized_route = self.serialize_route(route)
 
         def circuit_build_success(circuit):
+            time_end = self.now()
+            self.result_sink.send({"time_start": time_start,
+                                   "time_end": time_end,
+                                   "path": serialized_route,
+                                   "status": "success"})
             return circuit.close()
 
         def circuit_build_timeout(f):
