@@ -16,7 +16,8 @@ CREATE TABLE scan_log
 (
  first_hop               VARCHAR(44),
  second_hop              VARCHAR(44),
- status                  VARCHAT(10),
+ status                  VARCHAR(10),
+ reason                  VARCHAR(100),
  start_time              NUMBER,
  end_time                NUMBER
 );
@@ -97,8 +98,8 @@ class ProbeDB(object):
         self.connection = connection
         self.cursor = connection.cursor()
 
-    def add_probe_entry(self, first_hop, second_hop, status, start_time, end_time):
-        self.cursor.execute("INSERT INTO scan_log VALUES (?,?,?,?,?)",
-                            (first_hop, second_hop, status, start_time, end_time))
+    def add_probe_entry(self, first_hop, second_hop, status, start_time, end_time, reason):
+        self.cursor.execute("INSERT INTO scan_log VALUES (?,?,?,?,?,?)",
+                            (first_hop, second_hop, status, reason, start_time, end_time))
         self.connection.commit()
 
