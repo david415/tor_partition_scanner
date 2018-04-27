@@ -19,7 +19,7 @@ def main(dbfile, probefile):
             for val in results:
                 fields = val[u"path"].split(" -> ")
                 assert len(fields) == 2
-                probedb.add_probe_entry(fields[0], fields[1], val[u"status"], val[u"time_start"], val[u"time_end"])
+                probedb.add_probe_entry(fields[0], fields[1], val[u"status"], val[u"time_start"], val[u"time_end"], val[u"reason"])
 
         
 if __name__ == '__main__':

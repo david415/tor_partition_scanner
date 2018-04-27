@@ -50,9 +50,6 @@ class ProbeAll2HopCircuits(object):
         # XXX adjust me
         self.result_sink = ResultSink(log_dir, chunk_size=log_chunk_size)
 
-    def now(self):
-        return 1000 * time.time()
-
     def serialize_route(self, route):
         """
         Serialize a route.
@@ -67,34 +64,37 @@ class ProbeAll2HopCircuits(object):
         serialized_route = self.serialize_route(route)
 
         def circuit_build_success(circuit):
-            time_end = self.now()
+            time_end = time.time()
             self.result_sink.send({"time_start": time_start,
                                    "time_end": time_end,
                                    "path": serialized_route,
+                                   "reason": "",
                                    "status": "success"})
             return circuit.close()
 
         def circuit_build_timeout(f):
             f.trap(CircuitBuildTimedOutError)
-            time_end = self.now()
+            time_end = time.time()
             self.result_sink.send({"time_start": time_start,
                                    "time_end": time_end,
                                    "path": serialized_route,
+                                   "reason": f.value.reason,
                                    "status": "timeout"})
             return None
 
         def circuit_build_failure(f):
-            time_end = self.now()
+            time_end = time.time()
             self.result_sink.send({"time_start": time_start,
                                    "time_end": time_end,
                                    "path": serialized_route,
+                                   "reason": f.value.reason,
                                    "status": "failure"})
             return None
 
         def clean_up(opaque):
             self.tasks.pop(serialized_route)
 
-        time_start = self.now()
+        time_start = time.time()
         d = self.semaphore.run(build_timeout_circuit, self.state, self.clock, route, self.circuit_life_duration)
         self.tasks[serialized_route] = d
         d.addCallback(circuit_build_success)
